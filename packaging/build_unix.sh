@@ -66,9 +66,11 @@ cp "$ROOT/runtime/README.md" "$TARGET/runtime/"
 cp "$ROOT/LICENSE" "$ROOT/NOTICE.md" "$ROOT/THIRD_PARTY_NOTICES.md" "$TARGET/"
 
 PKG="SecOne-${VERSION}-portable-${SYS}-${ARCH}"
-TARBALL="$DIST/${PKG}.tar.gz"
+PACKAGE_DIR="$DIST/packages"
+mkdir -p "$PACKAGE_DIR"
+TARBALL="$PACKAGE_DIR/${PKG}.tar.gz"
 tar -C "$DIST" -czf "$TARBALL" "$(basename "$TARGET")"
-( cd "$DIST" && shasum -a 256 "$(basename "$TARBALL")" > "$(basename "$TARBALL").sha256" )
+( cd "$PACKAGE_DIR" && shasum -a 256 "$(basename "$TARBALL")" > "$(basename "$TARBALL").sha256" )
 
 echo
 echo "构建完成：$TARBALL"
