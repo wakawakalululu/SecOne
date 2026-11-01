@@ -2,6 +2,8 @@
 
 当前版本：**v1.0.0-rc1**（Local Intelligence Workstation）。
 
+[![CI](https://github.com/wakawakalululu/SecOne/actions/workflows/ci.yml/badge.svg)](https://github.com/wakawakalululu/SecOne/actions/workflows/ci.yml)
+
 SecOne 是一个面向 Windows 10/11 x64 的本地、离线优先安全分析桌面工具。它把文件识别、安全解包、静态规则分析、Flag 提取、本地模型研判、证据索引和报告导出串成一条可复现的分析链路，默认不联网、不上传材料。
 
 第一版优先保证“材料进入 → 解包与识别 → 专项静态分析 → Flag 候选与证据 → 报告”的端到端可用性；模型不是运行前提，缺少 GGUF 或 llama.cpp 时静态分析仍可工作，界面会明确显示缺失资源。
@@ -252,6 +254,20 @@ RC1 验证状态：107 项测试通过（含 19 正例/13 负例规则级 Flag �
 截图输出到 `artifacts/screenshots/`。演示任务会写入本机任务库与工作区。
 
 ## 打包
+
+CI/CD：`.github/workflows/ci.yml` 在 Windows / Linux / macOS 三平台矩阵上运行全部测试；`.github/workflows/release.yml` 在推送 `v*` 标签时自动构建三平台便携包（Windows 走 Nuitka standalone + 便携 ZIP，Linux/macOS 走 PyInstaller onedir + tar.gz），生成 SHA256SUMS 并自动附加到对应 GitHub Release（`rc/alpha/beta` 标签自动标记为 Pre-release）。
+
+### 跨平台说明
+
+程序核心不依赖 Windows 专属 API（目录打开走 Qt 标准接口，进程启动带平台回退），代码在三大平台可运行。平台差异集中在推理组件与打包形态：
+
+| 平台 | 打包方式 | 推理引擎 |
+| --- | --- | --- |
+| Windows 10/11 x64 | Nuitka standalone（`packaging/build_exe.ps1`）+ Inno Setup | `llama-server.exe`（发布方构建） |
+| Linux x64/ARM64 | PyInstaller onedir（`packaging/build_unix.sh`）→ tar.gz | 需自备 Linux 版 llama-server 放入 `runtime/` |
+| macOS（Apple Silicon/Intel） | PyInstaller onedir（同上脚本）→ tar.gz | 同上；产物未签名，首跑需 `xattr -cr <目录>` |
+
+三平台打包布局一致：`config/`、`assets/`、`licenses/`、`models/`（仅清单与候选列表）、`runtime/`（仅 README）与空运行目录随包，模型权重与 llama.cpp 二进制不入包。
 
 ### 1. 主程序（Nuitka standalone）
 

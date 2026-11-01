@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import sys
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QUrl, Signal
@@ -186,9 +187,14 @@ class SettingsPage(QWidget):
         )
         self.runtime_path = QLineEdit()
         self.runtime_path.setObjectName("Mono")
+        runtime_filter = (
+            "可执行文件 (*.exe);;所有文件 (*.*)"
+            if sys.platform == "win32"
+            else "所有文件 (*)"
+        )
         form.addRow(
             "llama-server",
-            self._path_field(self.runtime_path, "选择推理引擎", "可执行文件 (*.exe);;所有文件 (*.*)", False),
+            self._path_field(self.runtime_path, "选择推理引擎", runtime_filter, False),
         )
 
         self.discover_row = QHBoxLayout()

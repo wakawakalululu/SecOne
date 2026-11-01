@@ -80,6 +80,7 @@ try {
     }
     New-Item -ItemType Directory -Force -Path (Join-Path $target "models") | Out-Null
     Copy-Item (Join-Path $Root "models\model.json") (Join-Path $target "models\model.json") -Force
+    Copy-Item (Join-Path $Root "models\candidates.json") (Join-Path $target "models\candidates.json") -Force
     Copy-Item (Join-Path $Root "models\README.md") (Join-Path $target "models\README.md") -Force
     New-Item -ItemType Directory -Force -Path (Join-Path $target "runtime") | Out-Null
     Copy-Item (Join-Path $Root "runtime\README.md") (Join-Path $target "runtime\README.md") -Force
