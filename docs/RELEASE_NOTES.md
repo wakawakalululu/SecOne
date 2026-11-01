@@ -11,11 +11,11 @@ RC1 不新增业务大模块，重点是把已有 MVP 收口为可验收的交�
 ### Flag 引擎可信度
 
 - 占位符（`flag{...}`、`flag{your_flag_here}` 等）不会进入有效结果。
-- 单字节 XOR、Base64/Base32/Hex/URL/ROT13/ROT47 递归解码命中均可回溯。
+- 单字节 XOR、Base64/Base32/Hex/URL/ROT13/ROT47/Atbash/凯撒/仿射/Base58/Base85 递归解码、进制与字符码列表、HTML 实体/Unicode 转义/Quoted-Printable/JS 拼接、gzip/zlib 解压与 UTF-16LE 命中均可回溯。
 - 每个候选保留来源文件、字节偏移、解码链、证据和置信度。
 - 状态严格区分 `found` / `verified` / `candidate` / `none`；AI 提出的 Flag 只有逐字出现在证据中才会保留，且仍是候选。
-- 新增 Flag 回归用例 17 个（含整段倒序与十六进制密文 XOR 回归），覆盖正例、负例和边界；标注语料基准含 19 个正例（直接、Base64/Base32/Hex/URL/ROT、双层编码、JS 注释、大写、长 Flag、XOR 二进制）与 13 个负例（占位符、格式文档、良性源码/文本/二进制），规则级 precision 1.0、recall 1.0。
-- 标注语料只度量规则匹配与解码器，不代表真实模型解题准确率；真实模型解题准确率已做 60 条小样本实测（3/60 精确命中，5.0%），同语料确定性解码器 32/60，状态均为 PARTIAL，见下文。
+- 新增 Flag 回归用例 26 个（含整段倒序、十六进制密文 XOR 与解码族扩展回归），覆盖正例、负例和边界；标注语料基准含 19 个正例（直接、Base64/Base32/Hex/URL/ROT、双层编码、JS 注释、大写、长 Flag、XOR 二进制）与 13 个负例（占位符、格式文档、良性源码/文本/二进制），规则级 precision 1.0、recall 1.0。
+- 标注语料只度量规则匹配与解码器，不代表真实模型解题准确率；真实模型解题准确率已做 60 条小样本实测（3/60 精确命中，5.0%），同语料确定性解码器扩展后 60/60 全命中，模型侧状态仍为 PARTIAL，见下文。
 
 ### 本地模型诊断
 
@@ -63,10 +63,12 @@ RC1 不新增业务大模块，重点是把已有 MVP 收口为可验收的交�
   15 条异常输出计入 `hallucinations`，包含 8 条格式合法但答案错误的 flag 与 8 条畸形 flag
   形态（嵌套重复、未闭合、乱码），其中 1 条同时具备两类。报告：
   `artifacts/model_accuracy_xuanmusec_v4.json`。
-- 新增 `scripts/verify_decoder_accuracy.py`：同一 60 条材料只交给确定性 `FlagEngine`（不加载
-  模型），**32/60 命中标准答案（53.3%）**，32/60 无多余候选，全语料仅 1 个多余候选项；本轮
-  新增“整段倒序”与“十六进制密文单字节 XOR”两个解码族，报告
-  `artifacts/decoder_coverage_v4.json`。两项均为内部小样本测量，不代表正式准确率。
+- `scripts/verify_decoder_accuracy.py`：同一 60 条材料只交给确定性 `FlagEngine`（不加载
+  模型）。解码族扩展（Atbash、凯撒全位移、仿射、Base58/Base85、进制与字符码列表、HTML 实体、
+  Unicode 转义、Quoted-Printable、JS 字符串拼接与数组 join、gzip/zlib 解压、UTF-16LE，及
+  “整段倒序”“十六进制密文单字节 XOR”）后 **60/60 命中标准答案（100%）**，60/60 无多余
+  候选，全语料 0 个多余候选项；报告 `artifacts/decoder_coverage_v5.json`（扩展前基线 32/60
+  见 `artifacts/decoder_coverage_v4.json`）。两项均为内部小样本测量，不代表正式准确率。
 
 ### 部署依赖静态审计（本轮新增）
 
@@ -98,8 +100,8 @@ RC1 不新增业务大模块，重点是把已有 MVP 收口为可验收的交�
 
 | 交付项 | 状态 | 说明 |
 | --- | --- | --- |
-| 源码与测试 | DONE | 98 项测试通过，0 失败（含 9 项部署依赖静态审计与 4 项高 DPI 缩放用例） |
-| Flag 引擎回归 | DONE | 占位符、XOR、编码、归档证据、AI 回查、标注语料，共 14 项；规则级 precision 1.0、recall 1.0 |
+| 源码与测试 | DONE | 107 项测试通过，0 失败（含 9 项部署依赖静态审计与 4 项高 DPI 缩放用例） |
+| Flag 引擎回归 | DONE | 占位符、XOR、编码、古典密码、进制 ASCII、压缩、归档证据、AI 回查、标注语料，共 26 项；规则级 precision 1.0、recall 1.0 |
 | GGUF 元数据解析 | DONE | 合成样本 + 真实 Qwen2.5 GGUF（`qwen2`/24 层/32768/含模板） |
 | 推理客户端（mock） | DONE | 本地 HTTP mock 覆盖协议与错误路径及取消中断，10 项 |
 | **实机 llama-server 链路** | **DONE** | `scripts/verify_runtime.py` 14/14 |
@@ -113,7 +115,7 @@ RC1 不新增业务大模块，重点是把已有 MVP 收口为可验收的交�
 | Inno Setup 安装包 | DONE | `dist/installer/SecOne-1.0.0-rc1-setup.exe`，32,140,884 字节，SHA256 `49e380b7…46e09`，Inno Setup 6.7.4 编译；隔离目录静默安装 145 文件，安装后 EXE 与 `dist/SecOne` 字节一致；缺失模型提示按设计出现；卸载后 `data/`、`logs/` 保留；`scripts/verify_offline_install.ps1` 一键验收本机自检 9/9 通过 |
 | 真实 XuanmuSec-2.6B GGUF 加载/对话/流水线 | DONE | `lfm2`、30 层、131072 上下文、含对话模板；`verify_runtime.py` 14/14、`verify_ai_pipeline.py` 15/15、`verify_ui_model_flow.py` 9/9 |
 | 真实 XuanmuSec-2.6B 推理质量与解题准确率 | PARTIAL | 已用 60 条标准答案 CTF 小样本实测，3/60 精确命中（5.0%），15 条异常输出（含畸形 flag 与答案错误），多条在 512 token 上限内未收敛；样本仍属内部小样本，不代表正式准确率 |
-| 确定性解码器覆盖率（同语料对照） | DONE（基线） | `scripts/verify_decoder_accuracy.py` 不加载模型：32/60 命中（53.3%），32/60 无多余候选，仅度量解码器能力 |
+| 确定性解码器覆盖率（同语料对照） | DONE | `scripts/verify_decoder_accuracy.py` 不加载模型：解码族扩展后 60/60 命中（100%）、60/60 无多余候选，仅度量解码器能力 |
 | 干净 Windows 离线安装 | BLOCKED | 无无 Python、无网络的干净测试机 |
 | UI 交互自动化 | DONE | `test_ui_interaction.py` 11 项：素材接入/去重/符号链接拒绝、拖拽信号、忙碌锁定、进度、完成/失败渲染、报告导出、取消状态机 |
 | 长任务取消 | DONE | 工作台取消按钮 + 协作式取消事件；取消后任务落库为 `cancelled`，输入保留，`test_pipeline.py` / `test_llm_client.py` / `test_ui_interaction.py` 三层覆盖 |
@@ -129,7 +131,7 @@ RC1 不新增业务大模块，重点是把已有 MVP 收口为可验收的交�
    只解出 3 条（明文、源码注释为答案字面可见，URL 百分号编码由模型自行解码），其余
    编码、古典密码、进制 ASCII、Base58/Base85、压缩、组合变换与 XOR 均未成功，并出现
    15 条畸形或答案错误的输出。样本仍属内部小样本，不能据此给出正式准确率；同语料确定性
-   解码器命中 32/60，产品因此依赖确定性解码器与证据回查，模型输出必须回到证据中逐字命中
+   解码器扩展解码族后命中 60/60，产品因此依赖确定性解码器与证据回查，模型输出必须回到证据中逐字命中
    才保留为 `candidate`。
 2. **安装包未在干净环境验收**：`dist/installer/SecOne-1.0.0-rc1-setup.exe` 已由 Inno Setup 6.7.4 构建，并在本机隔离目录完成安装/启动/卸载验证；但尚未在无 Python、无网络的干净 Windows 上实测（与“干净 Windows 离线安装”同属 BLOCKED）。
 3. **模型许可仍缺发布方 NOTICE**：`LICENSE-XuanmuSec.txt` 只记录 Apache-2.0 许可选择；正式分发权重前需取得发布方的版权/NOTICE 文件。

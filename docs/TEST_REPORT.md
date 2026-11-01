@@ -3,7 +3,7 @@
 - 报告日期：2026-10-31
 - 测试环境：Windows 10 x64（10.0.19044），Python 3.12.10（嵌入式 `.python`），PySide6 6.9.3，pytest 9.2.0，Nuitka 4.3.3，llama.cpp `b12017`（`0.8.0-dev`, commit `5047748f1`）
 - 测试命令：`.\.python\python.exe -m pytest tests -o addopts="" -q`
-- 测试结果：**98 passed，0 failed**（2026-10-31 复跑，92.33s）
+- 测试结果：**107 passed，0 failed**（2026-11-01 复跑；此前 2026-10-31 基线为 98 passed）
 - 实机验收（Qwen2.5-0.5B 验证模型）：`verify_runtime.py` **14/14**（10.9s）、`verify_ai_pipeline.py` **15/15**（153.4s）、`verify_ui_model_flow.py` **9/9**
 - 实机验收（XuanmuSec-2.6B `Q6_K`）：`verify_runtime.py` **14/14**（19.4s，端口 18111）、`verify_ai_pipeline.py` **15/15**（61.9s，端口 18112）、`verify_ui_model_flow.py` **9/9**（端口 18105）；报告见 `artifacts/runtime_verification_xuanmusec.json` 与 `artifacts/ai_pipeline_verification_xuanmusec.json`
 
@@ -12,7 +12,7 @@
 | 测试文件 | 用例数 | 覆盖内容 |
 | --- | ---: | --- |
 | `tests/test_flag_benchmark.py` | 7 | 占位符负例、XOR 正例、编码链、压缩包内证据、AI 线索回查、状态排序、19 正例/13 负例标注语料精确率与召回率 |
-| `tests/test_flag_engine.py` | 10 | 直接匹配、Base64/Hex/ROT 递归解码、占位符过滤、去重与置信度、整段倒序、十六进制密文单字节 XOR、纯 Hex 无误报 |
+| `tests/test_flag_engine.py` | 19 | 直接匹配、Base64/Hex/ROT 递归解码、占位符过滤、去重与置信度、整段倒序、十六进制密文单字节 XOR、Atbash/凯撒/仿射、Base58/Base85、十进制/八进制/字符码列表/二进制、HTML 实体/Unicode 转义/Quoted-Printable、JS 拼接与数组 join（含原始拼接伪影抑制）、gzip/zlib/UTF-16LE、Base58 乱码过滤、`log("flag{…}")` 包裹形态、纯 Hex 无误报 |
 | `tests/test_ingest.py` | 5 | 材料接入、ZIP 路径穿越、条目/体积限制、去重、归档来源标记 |
 | `tests/test_llm_client.py` | 10 | 模拟 llama-server 的健康检查、问答成功、reasoning 回退、多段内容、HTTP 500、空内容、超时、服务未启动、模型列表、取消中断等待 |
 | `tests/test_model_info.py` | 3 | 模型状态、GGUF 头校验、引擎描述 |
@@ -34,9 +34,9 @@
 | 已知 XOR 样本恢复正确 Flag | DONE | `test_flag_benchmark.py` XOR 正例通过 |
 | 编码/压缩样本定位原始证据（来源、偏移、解码链） | DONE | Flag benchmark 与 ingest 用例通过 |
 | 无证据的模型输出不得标记为已发现 | DONE | AI 线索回查用例通过，状态保持 `candidate` |
-| 误报/漏报可重复回归 | DONE | 13 个 Flag 相关用例全部通过 |
+| 误报/漏报可重复回归 | DONE | 26 个 Flag 相关用例全部通过（`test_flag_benchmark.py` 7 项 + `test_flag_engine.py` 19 项） |
 | 规则级标注语料精确率/召回率（19 正例 / 13 负例） | DONE | `test_labeled_rule_corpus_precision_and_recall`：precision 1.0、recall 1.0、无负例误报；仅度量规则与解码器，不代表模型准确率 |
-| 确定性解码器在 60 条标准答案语料上的覆盖率 | DONE（基线） | `scripts/verify_decoder_accuracy.py`（不加载模型）：32/60 命中标准答案（53.3%），32/60 无多余候选，全语料仅 1 个多余候选项；报告 `artifacts/decoder_coverage_v4.json`；仅度量解码器，不代表模型准确率 |
+| 确定性解码器在 60 条标准答案语料上的覆盖率 | DONE | `scripts/verify_decoder_accuracy.py`（不加载模型）：60/60 命中标准答案（100%），60/60 无多余候选，全语料 0 个多余候选项；报告 `artifacts/decoder_coverage_v5.json`；仅度量解码器，不代表模型准确率 |
 | GGUF 元数据、架构、Tokenizer、对话模板解析 | DONE | `test_model_metadata.py` 4 项通过 |
 | 推理客户端成功/错误/超时/空内容路径 | DONE | `test_llm_client.py` 10 项通过（本地 mock HTTP 服务） |
 | 真实 XuanmuSec GGUF 加载与连续生成 | DONE | XuanmuSec-2.6B `Q6_K`（`lfm2`，30 层，131072 上下文，2.07 GiB）实机通过：`verify_runtime.py` 14/14（19.4s）、`verify_ai_pipeline.py` 15/15（61.9s）、`verify_ui_model_flow.py` 9/9；覆盖对话模板、结构化输出、停服与连续生成 |
@@ -69,7 +69,7 @@
 - 安装包桌面快捷方式链路：`/VERYSILENT /MERGETASKS=desktopicon "/DIR=<临时目录>"` 安装 exit 0，`SecOne.exe` 为 32,806,912 字节，桌面生成 `SecOne.lnk`（1,304 B）；解析出的 `TARGET` 指向临时安装目录下的 `SecOne.exe`、`WORKDIR` 为安装目录。通过 `.lnk` 启动（offscreen）12 秒后进程仍存活，首次启动创建 `data/history.db` 与 `logs/secone.log`，日志记录 `SecOne 1.0.0-rc1 started`。静默卸载 exit 0 后快捷方式被移除，`data/`、`logs/`、`models/`、`output/`、`runtime/`、`workspace/` 按 `uninsneveruninstall` 保留；临时安装目录与快捷方式均已清理，未触碰用户既有文件。
 - 一键离线安装验收脚本：新增 `scripts/verify_offline_install.ps1`，把安装→快捷方式→首启→可选模型包→卸载链路收敛为一条命令。本机自检（非干净机）9 个步骤全部 DONE：安装包 SHA256 校验、`PATH` 无 Python 前置检查、静默安装（141 个文件，递归计数）、载荷哈希与 `dist/SecOne/SecOne.exe` 一致、卸载注册项存在、`SecOne.lnk` 的 `TARGET`/`WORKDIR` 正确、最小 `PATH` 经快捷方式启动 12s 存活并生成 `data/history.db` 与 `logs/secone.log`、静默卸载后程序文件/快捷方式/注册项移除且 `data/`、`logs/` 保留。报告：`artifacts/offline_install_report.json`（`scope=acceptance-harness-run`）。该运行只证明脚本可用；干净机验收仍需以 `-CleanMachine` 实跑。
 - 真实模型实机验收（XuanmuSec-2.6B `Q6_K`）：`models/XuanmuSec-v2-Q6_K.gguf`（2,221,614,464 字节，SHA256 `bfaf475c…8098`，`lfm2`，30 层，131072 上下文，gpt2 分词器，含对话模板）。`verify_runtime.py --gguf models\XuanmuSec-v2-Q6_K.gguf` 14/14 通过（19.4s，端口 18111）；`verify_ai_pipeline.py --gguf models\XuanmuSec-v2-Q6_K.gguf` 15/15 通过（61.9s，端口 18112），防幻觉拒绝编造 Flag、真实材料 Flag 保持 `candidate`，9 个材料 / 7 个 Flag / 10 条发现，任务完成且报告落盘；`verify_ui_model_flow.py --gguf models\XuanmuSec-v2-Q6_K.gguf` 9/9 通过（端口 18105）。以上证明加载、模板、推理与证据链路，不代表解题准确率。
-- 标准答案 CTF 回归（真实模型 + 确定性解码器，PARTIAL）：`benchmarks/ctf_accuracy_v4.json` 共 60 条 / 41 类，v3 的 24 条原样保留，新增 36 条程序化用例（Base64URL、Base32 无填充、大写冒号 Hex、Base85、UTF-16LE、gzip/zlib、HTML 实体、Unicode 转义、quoted-printable、JS 字符串拼接、字符码列表、凯撒 +7、仿射密码、XOR 0x13 等，答案均不以字面形式出现在材料中）。`scripts/verify_model_accuracy.py --port 18106` 使用真实 XuanmuSec-2.6B（独立解题提示词，max_tokens=512、temperature=0），766.08s 完成（24 条复用 v3 缓存），结果 **3/60 精确命中（5.0%）**：命中为明文、源码注释与 URL 百分号编码。15 条异常输出计入 `hallucinations`：8 条包含格式合法但答案错误的 flag（如 `flag{Hello World! This is the flag}`），8 条包含畸形 flag 形态（嵌套重复 `flag{flag{…`、未闭合 `Flag{HeXTo…`、乱码），其中 1 条同时具备两类；多条在 512 token 处仍未收敛。报告：`artifacts/model_accuracy_xuanmusec_v4.json`。同语料用 `scripts/verify_decoder_accuracy.py` 只跑 `FlagEngine`（不加载模型）：**32/60 命中标准答案（53.3%）**，32/60 无多余候选，全语料仅 1 个多余候选项；本轮新增“整段倒序”与“十六进制密文单字节 XOR”两个解码族，报告 `artifacts/decoder_coverage_v4.json`。说明：两项均为内部小样本测量，不代表正式准确率；对比说明机械解码应由确定性引擎负责，模型输出必须回到证据中逐字命中才保留为 `candidate`。
+- 标准答案 CTF 回归（真实模型 + 确定性解码器，PARTIAL）：`benchmarks/ctf_accuracy_v4.json` 共 60 条 / 41 类，v3 的 24 条原样保留，新增 36 条程序化用例（Base64URL、Base32 无填充、大写冒号 Hex、Base85、UTF-16LE、gzip/zlib、HTML 实体、Unicode 转义、quoted-printable、JS 字符串拼接、字符码列表、凯撒 +7、仿射密码、XOR 0x13 等，答案均不以字面形式出现在材料中）。`scripts/verify_model_accuracy.py --port 18106` 使用真实 XuanmuSec-2.6B（独立解题提示词，max_tokens=512、temperature=0），766.08s 完成（24 条复用 v3 缓存），结果 **3/60 精确命中（5.0%）**：命中为明文、源码注释与 URL 百分号编码。15 条异常输出计入 `hallucinations`：8 条包含格式合法但答案错误的 flag（如 `flag{Hello World! This is the flag}`），8 条包含畸形 flag 形态（嵌套重复 `flag{flag{…`、未闭合 `Flag{HeXTo…`、乱码），其中 1 条同时具备两类；多条在 512 token 处仍未收敛。报告：`artifacts/model_accuracy_xuanmusec_v4.json`。同语料用 `scripts/verify_decoder_accuracy.py` 只跑 `FlagEngine`（不加载模型）：解码族扩展（Atbash、凯撒全位移、仿射、Base58/Base85、进制与字符码列表、HTML 实体、Unicode 转义、Quoted-Printable、JS 字符串拼接与数组 join、gzip/zlib 解压、UTF-16LE，及“整段倒序”“十六进制密文单字节 XOR”）后 **60/60 命中标准答案（100%）**，60/60 无多余候选，全语料 0 个多余候选项；报告 `artifacts/decoder_coverage_v5.json`（扩展前基线 32/60 见 `artifacts/decoder_coverage_v4.json`）。说明：两项均为内部小样本测量，不代表正式准确率；对比说明机械解码应由确定性引擎负责，模型输出必须回到证据中逐字命中才保留为 `candidate`。
 - 模型包：`scripts/package_model.py` 的 GGUF 头校验、SHA256 清单、许可文件强制检查与
   运行组件许可已由 11 个用例覆盖。用真实 XuanmuSec-2.6B `Q6_K` 权重 + `runtime/` 实测生成
   `dist/packages/SecOne-model-XuanmuSec-2.6B-Q6_K/`（`models/` 权重、`runtime/` 53 个文件、
@@ -112,7 +112,7 @@
 - 未安装 `pytest-timeout`，超时路径通过客户端自身的 `timeout` 参数验证，而非用例级超时插件。
 - 标注语料基准只度量规则匹配与解码器行为（19 正例 / 13 负例，precision 1.0、recall 1.0），不代表真实模型解题准确率。
 - 模型解题准确率已做一次内部小样本实测（60 条，3/60 精确命中，见第 3 节），但样本量仍不足以形成正式准确率结论，故状态为 PARTIAL 而非 DONE。
-- 基准 harness 的严格/宽松 flag 提取、语料校验与缓存键（模型 + prompt 版本 + token 预算）已由 `test_model_accuracy.py` 7 项离线用例覆盖，但真实模型本身的解题能力仍需更大规模标注语料验证；确定性解码器覆盖率已用同一 60 条语料测得 32/60（`artifacts/decoder_coverage_v4.json`），可重复但仅代表解码器能力。
+- 基准 harness 的严格/宽松 flag 提取、语料校验与缓存键（模型 + prompt 版本 + token 预算）已由 `test_model_accuracy.py` 7 项离线用例覆盖，但真实模型本身的解题能力仍需更大规模标注语料验证；确定性解码器覆盖率已用同一 60 条语料测得 60/60（`artifacts/decoder_coverage_v5.json`，扩展前基线 32/60 见 `decoder_coverage_v4.json`），可重复但仅代表解码器能力。
 - UI 交互测试在 offscreen Qt 下使用信号级 `StubWorker`，覆盖素材接入、拖拽信号、忙碌锁定、进度、完成/失败渲染、报告导出与取消任务状态机。高 DPI 布局已由 `test_ui_dpi.py` 在 100%/125%/150%/200% 与三种分辨率下自动回归（真实 Qt 缩放与光栅化，非物理显示器）；物理鼠标拖拽、真实多显示器与系统级缩放的观感仍需人工验收。
 - 取消链路由三层用例覆盖：`test_pipeline.py` 验证取消后任务落库为 `cancelled`，`test_ui_interaction.py` 验证按钮状态机与输入保留，`test_llm_client.py` 验证取消事件能中断进行中的 HTTP 等待。
 - 模拟 llama-server 只用于协议与错误路径回归；LFM2 架构、对话模板与真实生成已由 XuanmuSec-2.6B 实机验收覆盖，但该验收只证明链路可用，不构成生成质量或解题准确率结论。

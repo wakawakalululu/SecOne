@@ -23,7 +23,7 @@ SecOne 是一个面向 Windows 10/11 x64 的本地、离线优先安全分析桌
 | 安全解包 | ZIP/TAR/GZip/BZip2/XZ/7z；递归解包；大小、数量、深度限制；RAR 需外部组件 |
 | 文件识别 | Magic/扩展名识别、文本编码回退、PDF 文本、图片/EXIF、PCAP、SQLite、PE/ELF 结构 |
 | 去重索引 | SHA256 指纹与重复文件去重，记录材料清单 |
-| Crypto 分析 | Base64/Base32/Hex/URL/ROT13/ROT47 递归解码、凯撒、单字节 XOR、RSA 参数与 PEM 识别 |
+| Crypto 分析 | Base64/Base32/Hex/URL/ROT13/ROT47/Atbash/凯撒/仿射/Base58/Base85 递归解码、进制与字符码列表、HTML 实体/Unicode 转义/Quoted-Printable、JS 拼接还原、gzip/zlib 解压、单字节 XOR、RSA 参数与 PEM 识别 |
 | Web 审计 | 命令执行、动态执行、文件包含、SQL 拼接、不安全反序列化、硬编码凭据、XSS/SSRF/路径穿越等规则 |
 | 文件取证 | 图片元数据、PCAP 头、SQLite schema、PDF 元数据、压缩包清单、熵与字符串 |
 | 二进制静态 | PE/ELF 位数、节区、W+X、高熵、Overlay、PIE/NX/RELRO、可疑导入/字符串；不运行样本 |
@@ -31,6 +31,34 @@ SecOne 是一个面向 Windows 10/11 x64 的本地、离线优先安全分析桌
 | 本地 AI | llama-server 生命周期管理、GGUF 头校验、健康检查、模型状态与日志诊断 |
 | 报告 | Markdown / TXT / JSON、证据索引、候选详情、方法与边界声明 |
 | 任务历史 | SQLite WAL 任务库，支持回看结果、打开工作区、导出报告 |
+
+## 界面预览
+
+分析工作台：拖入材料后一键梭哈或按模式分析，结果按 Flag 候选 / 静态发现 / AI 判断 / 材料清单分页展示。
+
+![分析工作台](docs/screenshots/workbench.png)
+
+Flag 候选与证据：每个候选保留来源文件、偏移、提取方法与置信度，候选必须经人工确认。
+
+![Flag 候选与证据](docs/screenshots/workbench_result.png)
+
+静态发现：Web 审计规则按严重程度排序，直接定位到源码行。
+
+![静态发现](docs/screenshots/workbench_findings.png)
+
+模型与设置：模型路径、llama-server、端口、上下文、GPU 层数与线程数均可在界面修改，无需改代码。
+
+![模型与设置](docs/screenshots/settings.png)
+
+扫描 `models/` 中的 GGUF，选中即写入配置。
+
+![模型发现](docs/screenshots/settings_discover.png)
+
+任务历史：本机 SQLite 任务库，可回看结果、打开工作区、再次导出报告。
+
+![任务历史](docs/screenshots/history.png)
+
+更多说明见本仓库 [Wiki](https://github.com/wakawakalululu/SecOne/wiki)。
 
 ## 快速开始（开发模式）
 
@@ -107,14 +135,14 @@ POST /v1/chat/completions
 | 模型精确命中 | **3/60（5.0%）**：明文、URL 百分号编码、源码注释，均为答案字面可见或模型自行完成百分号解码 |
 | 畸形/错误输出 | 15 条计入 `hallucinations`：畸形 flag 形态（嵌套重复 `flag{flag{…`、未闭合、乱码）与格式合法但答案错误（如 `flag{Hello World! This is the flag}`） |
 | 耗时 | 766.08s（24 条复用 v3 缓存，其余 36 条实测）；报告 `artifacts/model_accuracy_xuanmusec_v4.json` |
-| 确定性引擎对照 | 同一 60 条材料只交给 `FlagEngine`（不加载模型）：**32/60 命中标准答案（53.3%）**，32/60 无多余候选，全语料仅 1 个多余候选项；报告 `artifacts/decoder_coverage_v4.json` |
+| 确定性引擎对照 | 同一 60 条材料只交给 `FlagEngine`（不加载模型）：**60/60 命中标准答案（100%）**，60/60 无多余候选，全语料 0 个多余候选项；报告 `artifacts/decoder_coverage_v5.json` |
 
 ```powershell
 .\.python\python.exe scripts\verify_model_accuracy.py --port 18106 --no-reuse
 .\.python\python.exe scripts\verify_decoder_accuracy.py
 ```
 
-两条回归均不能当作正式准确率。模型侧命中仍集中在答案字面可见的题目，其余需要变换还原的编码、古典密码与 XOR 用例多数只输出未执行的解码代码片段、回显材料或畸形 flag；确定性解码器可覆盖 Base64/Base32/Hex/URL/ROT/整段倒序及十六进制密文的单字节 XOR 等机械变换，但对凯撒、Atbash、Base58/Base85、压缩、字符码列表等仍未覆盖。这与产品设计一致：Flag 还原由确定性引擎负责，模型只提供线索，输出必须回到证据中逐字命中才保留为 `candidate`。
+两条回归均不能当作正式准确率。模型侧命中仍集中在答案字面可见的题目；确定性解码器现已覆盖 Base64/Base32/Hex/URL/ROT13/ROT47/整段倒序、单字节 XOR、Atbash、凯撒全位移、仿射、Base58/Base85、十进制/八进制/二进制/字符码列表、HTML 实体、Unicode 转义、Quoted-Printable、JS 字符串拼接与数组 join、gzip/zlib 压缩及 UTF-16LE 等机械变换，在 v4 语料上达到全命中且无多余候选。这与产品设计一致：Flag 还原由确定性引擎负责，模型只提供线索，输出必须回到证据中逐字命中才保留为 `candidate`。
 
 ## 使用流程
 
@@ -182,7 +210,7 @@ tests/                pytest 测试
 .\.python\python.exe -m pytest tests -q
 ```
 
-测试覆盖 Flag 规则与占位符、编码/XOR 恢复、19 正例/13 负例标注语料（规则级 precision/recall 1.0）、AI 线索回查、压缩包路径穿越/条目限制/去重、GGUF 头与元数据解析、模拟 llama-server 推理客户端（含取消中断）、端到端流水线（含任务取消落库）、报告输出、界面冒烟和工作台交互（素材接入、拖拽信号、进度、完成/失败渲染、导出、取消状态机）。
+测试覆盖 Flag 规则与占位符、编码/XOR/古典密码（Atbash、凯撒、仿射）/Base58/Base85/进制与字符码列表/HTML 实体/Unicode 转义/Quoted-Printable/JS 拼接/gzip-zlib/UTF-16LE 恢复、拼接原始串误报抑制、19 正例/13 负例标注语料（规则级 precision/recall 1.0）、AI 线索回查、压缩包路径穿越/条目限制/去重、GGUF 头与元数据解析、模拟 llama-server 推理客户端（含取消中断）、端到端流水线（含任务取消落库）、报告输出、界面冒烟和工作台交互（素材接入、拖拽信号、进度、完成/失败渲染、导出、取消状态机）。
 
 发布材料：
 
@@ -196,7 +224,7 @@ tests/                pytest 测试
 - 安装包：`dist/installer/SecOne-1.0.0-rc1-setup.exe`
 - 模型资源包：`dist/packages/SecOne-model-XuanmuSec-2.6B-Q6_K.zip`（2,246,914,836 字节，SHA256 `eb77aecd…8e87`；发布方 NOTICE 补齐前仅限内部验收）
 
-RC1 验证状态：98 项测试通过（含 19 正例/13 负例规则级 Flag 标注语料，precision/recall 1.0；含 9 项标准答案基准 harness 离线回归、9 项部署依赖静态审计与 4 项高 DPI 缩放回归）；Nuitka standalone EXE 已构建，发布 ZIP 解压后在最小 PATH（清除 Python 变量）下启动冒烟通过；Inno Setup 安装包已构建并完成隔离安装/启动/卸载验证；`scripts/audit_bundle.py` 对 `dist/SecOne` 的 23 项静态依赖检查全通过（内嵌解释器、Qt 平台插件、VC++ 运行库、许可、首次启动目录、无开发机路径泄漏）；真实 XuanmuSec-2.6B GGUF 的引擎、全流水线与界面链路均已实机通过（14/14、15/15、9/9）；标准答案 60 条小样本解题回归为 3/60（5.0%，内部小样本，不代表正式准确率；同语料确定性解码器 32/60）；干净 Windows 离线验收仍为 BLOCKED，详见发布说明与测试报告。
+RC1 验证状态：107 项测试通过（含 19 正例/13 负例规则级 Flag 标注语料，precision/recall 1.0；含 9 项标准答案基准 harness 离线回归、9 项部署依赖静态审计与 4 项高 DPI 缩放回归）；Nuitka standalone EXE 已构建，发布 ZIP 解压后在最小 PATH（清除 Python 变量）下启动冒烟通过；Inno Setup 安装包已构建并完成隔离安装/启动/卸载验证；`scripts/audit_bundle.py` 对 `dist/SecOne` 的 23 项静态依赖检查全通过（内嵌解释器、Qt 平台插件、VC++ 运行库、许可、首次启动目录、无开发机路径泄漏）；真实 XuanmuSec-2.6B GGUF 的引擎、全流水线与界面链路均已实机通过（14/14、15/15、9/9）；标准答案 60 条小样本解题回归为 3/60（5.0%，内部小样本，不代表正式准确率；同语料确定性解码器扩展后 60/60 全命中、0 多余候选）；干净 Windows 离线验收仍为 BLOCKED，详见发布说明与测试报告。
 
 生成开发截图与演示材料：
 
@@ -268,7 +296,7 @@ RC1 实际产物：`dist\installer\SecOne-1.0.0-rc1-setup.exe`（32,140,884 字�
 - 不执行样本、不动态调试、不做公网扫描、不做漏洞利用。
 - 没有模型时 AI 页签只显示跳过原因。
 - 报告中的“已验证”状态为后续人工/自动验证流程预留；当前不会把解码结果自动视为答案。
-- XuanmuSec-2.6B 的加载、对话模板与推理链路已实机验证；标准答案回归扩至 60 条后为 3/60 精确命中（5.0%，内部小样本），命中仍为明文、源码注释（答案字面出现在材料中）与 URL 百分号编码（模型自行解码），其余 57 条（Base64/Base32/Hex/ROT/倒序/双层编码/古典密码/进制 ASCII/Base58/Base85/压缩/字符码/组合变换/XOR 等）均未解出，并出现 15 条畸形或答案错误的输出。同语料确定性解码器命中 32/60，说明产品价值主要来自可追溯的解码与证据回查，而非模型直接给出答案。不能由“能回答”推定“能解对”，也不能用这 60 条样本给出正式准确率。
+- XuanmuSec-2.6B 的加载、对话模板与推理链路已实机验证；标准答案回归扩至 60 条后为 3/60 精确命中（5.0%，内部小样本），命中仍为明文、源码注释（答案字面出现在材料中）与 URL 百分号编码（模型自行解码），其余 57 条（Base64/Base32/Hex/ROT/倒序/双层编码/古典密码/进制 ASCII/Base58/Base85/压缩/字符码/组合变换/XOR 等）均未解出，并出现 15 条畸形或答案错误的输出。同语料确定性解码器扩展解码族后命中 60/60（100%，无多余候选），说明产品价值主要来自可追溯的解码与证据回查，而非模型直接给出答案。不能由“能回答”推定“能解对”，也不能用这 60 条样本给出正式准确率。
 
 ## 本轮修复记录（v1.0.0-rc1 验证阶段）
 
@@ -280,3 +308,4 @@ RC1 实际产物：`dist\installer\SecOne-1.0.0-rc1-setup.exe`（32,140,884 字�
 | 分发 llama.cpp 二进制时未附带 MIT 许可文本 | 新增 `RUNTIME_LICENSES`，仅在 `--runtime-dir` 时强制要求 |
 | 配置的模型名不存在时界面死锁在“模型文件未安装” | 新增 `discover_models()` 与设置页“扫描 models/ 中的 GGUF”下拉框，选中即写入路径 |
 | 打包测试把“许可缺失”写死，许可证补齐后误报失败 | 改为 monkeypatch `REQUIRED_LICENSES`，并新增许可证真实存在/随包分发/上游原文校验测试 |
+| 确定性解码器在同语料上仅 32/60 命中，凯撒/Atbash/仿射/Base58/Base85/进制 ASCII/字符码列表/HTML 实体/Unicode 转义/Quoted-Printable/JS 拼接/gzip-zlib/UTF-16LE 未覆盖 | `FlagEngine` 新增上述解码族；解码路径输出统一经 UTF-8 严格解码 + 纯 ASCII 校验过滤；`_walk_text` 增加按已配置规则直接匹配（修复 `console.log("flag{…}")` 被泛化括号形态吞掉）；JS 拼接原始串（`"a"+"b"`）在直扫与解码匹配中按拼接伪影压制；同语料基准升至 **60/60（100%）**、0 多余候选，报告 `artifacts/decoder_coverage_v5.json`，测试增至 107 项 |

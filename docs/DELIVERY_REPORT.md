@@ -11,10 +11,10 @@
 
 | 验收目标 | 优先级 | 状态 | 结论 |
 | --- | --- | --- | --- |
-| Flag 引擎误报/漏报修复与回归体系 | P0 | DONE | 占位符误报、XOR 漏检、倒序/编码链遗漏均已修复并有自动化用例；98 项测试全绿 |
+| Flag 引擎误报/漏报修复与回归体系 | P0 | DONE | 占位符误报、XOR 漏检、倒序/编码链遗漏均已修复并有自动化用例；解码族扩展后 107 项测试全绿 |
 | 真实 GGUF 模型接入与实机推理 | P0 | DONE | 真实 XuanmuSec-2.6B `Q6_K` 完成启动/健康/对话/连续生成/停服与全流水线实机验收 |
 | 真实模型解题准确性回归 | P0（新增要求） | PARTIAL | 60 条标准答案语料实测 3/60（5.0%），15 条异常输出；内部小样本，不构成正式准确率 |
-| 确定性解码器覆盖率（同语料对照） | P0（新增要求） | DONE（基线） | `FlagEngine` 单独 32/60（53.3%），32/60 无多余候选 |
+| 确定性解码器覆盖率（同语料对照） | P0（新增要求） | DONE | `FlagEngine` 单独 60/60（100%），60/60 无多余候选（扩展前基线 32/60 见 `decoder_coverage_v4.json`） |
 | Nuitka EXE 与 Inno Setup 安装包实际构建 | P0 | DONE | 真实产物已构建、启动冒烟、隔离目录安装/卸载验证通过 |
 | 干净 Windows 离线安装验收 | P1 | BLOCKED | 无无 Python、无网络的干净测试机；以解压冒烟 + 23 项静态依赖审计做补偿验证 |
 | 完整发布材料 | P1 | DONE（许可 PARTIAL） | 便携 ZIP、安装包、模型资源包、141 条 SHA256 清单、测试报告、发布说明、离线安装文档、第三方许可清单 |
@@ -29,13 +29,13 @@
 | Agent B（模型与推理） | GGUF 元数据、llama-server 生命周期、OpenAI 兼容客户端、超时/取消/诊断、Mock 测试 | DONE：`src/secone/llm/server.py`、`src/secone/llm/client.py`；实机 14/14、15/15、9/9；10 项 mock 用例覆盖错误路径与取消 |
 | Agent C（桌面端） | 工作台、拖拽、进度、取消、结果与证据渲染、设置/历史/诊断、布局 | DONE（交互与高 DPI DONE，真实鼠标 PARTIAL）：`src/secone/ui/**`；11 项交互用例 + 3 项冒烟用例 + 4 项高 DPI 缩放用例通过 |
 | Agent D（打包交付） | EXE、安装器、模型分包、依赖审计、SHA256、离线文档、卸载数据保护 | DONE（干净机验收 BLOCKED）：`packaging/build_exe.ps1`、`packaging/SecOne.iss`、`scripts/package_model.py`、`scripts/audit_bundle.py` |
-| Team Lead | 接口统一、并行协调、冲突处理、全量测试、文档与最终验收 | DONE：全部模块接口一致，无跨模块冲突，98 项测试 0 失败，文档与产物哈希已对齐 |
+| Team Lead | 接口统一、并行协调、冲突处理、全量测试、文档与最终验收 | DONE：全部模块接口一致，无跨模块冲突，107 项测试 0 失败，文档与产物哈希已对齐 |
 
 ## 3. 修改和新增的文件清单
 
 应用代码：
 
-- `src/secone/core/flag_engine.py` — 整段倒序解码、Hex 字节单字节 XOR 解码族、占位符过滤、去重与状态排序、AI 候选证据回查
+- `src/secone/core/flag_engine.py` — 整段倒序解码、Hex 字节单字节 XOR 解码族、Atbash/凯撒/仿射、Base58/Base85、进制与字符码列表、HTML 实体/Unicode 转义/Quoted-Printable、JS 拼接还原、gzip/zlib 解压、UTF-16LE、占位符过滤、去重与状态排序、AI 候选证据回查
 - `src/secone/core/ingest.py`、`workspace.py`、`fileio.py`、`classify.py` — 安全摄入、路径穿越/符号链接拒绝、解包限额、去重、题型识别
 - `src/secone/core/pipeline.py`、`report.py` — 一键流水线、协作式取消、结构化报告与导出
 - `src/secone/core/plugins/{base,crypto,forensics,web_audit,binary,misc}.py` — Crypto / 取证 / Web / Pwn / Reverse / Misc 静态分析
@@ -43,7 +43,7 @@
 - `src/secone/ui/{main_window,worker,theme,widgets,context,app}.py`、`src/secone/ui/pages/{workbench,settings,history}.py` — 工作台、模型设置与扫描、诊断、任务历史
 - `src/secone/{config,paths,db,domain}.py`、`src/secone/__main__.py`、`run_secone.py` — 配置、路径、SQLite、领域模型、启动入口
 
-测试（1 个 conftest + 14 个测试文件，98 用例）：
+测试（1 个 conftest + 14 个测试文件，107 用例）：
 
 - `tests/{conftest,test_flag_engine,test_flag_benchmark,test_ingest,test_pipeline,test_llm_client,test_model_info,test_model_label,test_model_metadata,test_model_accuracy,test_package_model,test_bundle_audit,test_ui_interaction,test_ui_smoke,test_ui_dpi}.py`（`tests/_dpi_probe.py` 为高 DPI 子进程探针，不被 pytest 直接收集）
 
@@ -118,7 +118,7 @@
 | 全流水线 + 防幻觉 + 报告落盘 | DONE 15/15（61.9s，端口 18112）；9 材料 / 7 Flag / 10 发现 | `artifacts/ai_pipeline_verification_xuanmusec.json` |
 | 界面配置模型→保存→启动→推理 | DONE 9/9（端口 18105） | `artifacts/verify_ai_pipeline_engine_rename.json` 等 |
 | 解题准确性（60 条标准答案） | **3/60 精确命中（5.0%）**，15 条异常输出，766.08s | `artifacts/model_accuracy_xuanmusec_v4.json` |
-| 同语料确定性解码器 | **32/60（53.3%）**，32/60 无多余候选，全语料仅 1 个多余候选 | `artifacts/decoder_coverage_v4.json` |
+| 同语料确定性解码器 | **60/60（100%）**，60/60 无多余候选，全语料 0 个多余候选（扩展前基线 32/60 见 `decoder_coverage_v4.json`） | `artifacts/decoder_coverage_v5.json` |
 
 命中的 3 条为明文、URL 百分号编码、源码注释——答案以可读形式出现或只需一步机械解码。其余 39 类（Base64/Base32/Hex/ROT13/ROT47/倒序/双层编码/Caesar/Atbash/进制 ASCII/Base58/组合变换/XOR/gzip/zlib/UTF-16LE 等）均未解出；15 条异常输出中 8 条为格式合法但答案错误，8 条为畸形形态（嵌套重复、未闭合、乱码），1 条重叠。多条在 512 token 上限内未收敛。
 
@@ -203,7 +203,7 @@
 | 运行组件 | `runtime/`（llama-server 及其他，模型包提供） | — | 见模型包清单 |
 | 基准语料 | `benchmarks/ctf_accuracy_v4.json`（60 条 / 41 类） | 25,983 B | — |
 | 模型准确性报告 | `artifacts/model_accuracy_xuanmusec_v4.json` | 47,098 B | — |
-| 解码器覆盖率报告 | `artifacts/decoder_coverage_v4.json` | 13,841 B | — |
+| 解码器覆盖率报告 | `artifacts/decoder_coverage_v4.json`（基线）、`artifacts/decoder_coverage_v5.json`（解码族扩展后 60/60） | 13,841 B / — | — |
 | 实机验收报告 | `artifacts/runtime_verification_xuanmusec.json`、`ai_pipeline_verification_xuanmusec.json` | — | — |
 | 一键离线安装验收脚本 | `scripts/verify_offline_install.ps1` | — | — |
 | 离线安装验收报告（本机自检） | `artifacts/offline_install_report.json` | — | — |
