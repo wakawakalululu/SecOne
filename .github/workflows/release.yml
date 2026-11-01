@@ -41,8 +41,9 @@ jobs:
       - name: Pack portable ZIP
         shell: pwsh
         run: |
+          $tag = "${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}"
           New-Item -ItemType Directory -Force -Path dist/packages | Out-Null
-          Compress-Archive -Path dist/SecOne -DestinationPath "dist/packages/SecOne-$($env:GITHUB_REF_NAME)-portable-win64.zip" -Force
+          Compress-Archive -Path dist/SecOne -DestinationPath "dist/packages/SecOne-$tag-portable-win64.zip" -Force
       - uses: actions/upload-artifact@v4
         with:
           name: portable-win64
