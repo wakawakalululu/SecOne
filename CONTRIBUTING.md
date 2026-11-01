@@ -35,6 +35,15 @@ docs: 更新候选模型清单
 test: 补充凯撒全位移边界用例
 ```
 
+## Wiki 维护
+
+文档中心以 `docs/wiki/` 为唯一事实来源（随主仓库版本化）。修改页面后，用同步脚本推送到 GitHub Wiki 页签：
+
+```powershell
+.\.python\python.exe scripts\sync_wiki.py --push          # 同步、提交并推送
+.\.python\python.exe scripts\sync_wiki.py --dry-run      # 只预览将变更的文件
+```
+
 ## Pull Request
 
 - 一个 PR 聚焦一件事，说明动机与验证方式；
