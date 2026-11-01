@@ -52,7 +52,7 @@ jobs:
           retention-days: 7
 
   build-unix:
-    name: build (${{ matrix.sys }})
+    name: build (${{ matrix.sys }}-${{ matrix.arch }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -60,8 +60,13 @@ jobs:
         include:
           - os: ubuntu-latest
             sys: linux
+            arch: x86_64
           - os: macos-latest
             sys: macos
+            arch: arm64
+          - os: macos-13
+            sys: macos
+            arch: x86_64
     env:
       QT_QPA_PLATFORM: offscreen
       PYTHONIOENCODING: utf-8
@@ -86,7 +91,7 @@ jobs:
         run: bash packaging/build_unix.sh --skip-tests
       - uses: actions/upload-artifact@v4
         with:
-          name: portable-${{ matrix.sys }}
+          name: portable-${{ matrix.sys }}-${{ matrix.arch }}
           path: dist/packages/*.tar.gz*
           if-no-files-found: error
           retention-days: 7
