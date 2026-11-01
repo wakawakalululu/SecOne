@@ -90,7 +90,12 @@ def utf16le_hex(text: str) -> str:
 
 
 def gzip_b64(text: str) -> str:
-    return base64.b64encode(gzip.compress(text.encode(), mtime=0)).decode()
+    # zlib 写入 gzip 头部的 OS 字节（第 10 字节）随宿主平台变化
+    # （本仓库 Windows 环境为 0x0a，Linux 为 0x03），固定为已提交语料中的
+    # 取值，保证生成器输出与 benchmarks/ctf_accuracy_v4.json 跨平台一致。
+    raw = gzip.compress(text.encode(), mtime=0)
+    normalized = raw[:9] + b"\x0a" + raw[10:]
+    return base64.b64encode(normalized).decode()
 
 
 def zlib_hex(text: str) -> str:
