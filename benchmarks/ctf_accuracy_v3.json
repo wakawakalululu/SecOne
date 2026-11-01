@@ -1,0 +1,199 @@
+{
+  "version": 3,
+  "name": "SecOne CTF 准确性样本 v3",
+  "note": "内部基准：24 条具有精确标准答案的可解 CTF 材料，用于回归模型能否从材料还原答案，不代表正式准确率，也不构成统计结论。v3 在 v2 的 12 条上补充凯撒、Atbash、十进制/八进制/二进制 ASCII、Base58、Base64+ROT13、Hex+倒序、ROT13+Hex、XOR(0x5A)、完整 URL 编码与带空格 Hex。所有新增用例的答案都不以字面形式出现在材料中。",
+  "cases": [
+    {
+      "id": "plaintext-01",
+      "category": "plaintext",
+      "material": "题目备注（泄露的 notes.txt）：\n请提交 flag{pl41n_s1ght_2026} 作为本题答案，其余内容无需处理。",
+      "flag": "flag{pl41n_s1ght_2026}",
+      "hint": "答案以明文出现在材料中。",
+      "flag_literal_in_material": true
+    },
+    {
+      "id": "base64-01",
+      "category": "base64",
+      "material": "题干附带一段 Base64 文本：\nRGVjb2RlZCBhbnN3ZXI6IGZsYWd7YjY0X3Vud3JhcHAzZF8yMDI2fQ==",
+      "flag": "flag{b64_unwrapp3d_2026}",
+      "hint": "材料为 Base64 编码，解码后得到明文答案。",
+      "flag_literal_in_material": false
+    },
+    {
+      "id": "base32-01",
+      "category": "base32",
+      "material": "题干附带一段 Base32 文本：\nIZUW4YLMEBQW443XMVZDUIDGNRQWO63CGMZF64BUMRSDGZC7GIYDENT5",
+      "flag": "flag{b32_p4dd3d_2026}",
+      "hint": "材料为 Base32 编码，解码后得到明文答案。",
+      "flag_literal_in_material": false
+    },
+    {
+      "id": "hex-01",
+      "category": "hex",
+      "material": "题干附带十六进制字节串：\n486578206465636f64656420616e737765723a20666c61677b6833785f62797433735f323032367d",
+      "flag": "flag{h3x_byt3s_2026}",
+      "hint": "材料为十六进制编码，转回 ASCII 后得到答案。",
+      "flag_literal_in_material": false
+    },
+    {
+      "id": "url-01",
+      "category": "url",
+      "material": "题干附带一段 URL 百分号编码文本：\nFinal%20answer%3A%20flag%7Burl_3nc0d3d_2026%7D",
+      "flag": "flag{url_3nc0d3d_2026}",
+      "hint": "材料为 URL 百分号编码，解码 %20、%3A、%7B、%7D 后得到答案。",
+      "flag_literal_in_material": false
+    },
+    {
+      "id": "rot13-01",
+      "category": "rot13",
+      "material": "题干提示：文本经过 ROT13 变换。\nSvany nafjre: synt{e0g13_fu1sg_2026}",
+      "flag": "flag{r0t13_sh1ft_2026}",
+      "hint": "材料为 ROT13 变换后的文本，旋转 13 位还原。",
+      "flag_literal_in_material": false
+    },
+    {
+      "id": "rot47-01",
+      "category": "rot47",
+      "material": "题干提示：文本经过 ROT47 变换（ASCII 33-126 区间旋转 47 位）。\nu:?2= 2?DH6Ci 7=28LC_Ecf0DA`?0a_aeN",
+      "flag": "flag{r0t47_sp1n_2026}",
+      "hint": "材料为 ROT47 变换后的文本，在可打印 ASCII 区间旋转 47 位还原。",
+      "flag_literal_in_material": false
+    },
+    {
+      "id": "reversed-01",
+      "category": "reversed",
+      "material": "题干提示：flag 字符串被整体倒序保存，原文如下：\n}6202_d3srever{galf :rewsna laniF",
+      "flag": "flag{revers3d_2026}",
+      "hint": "材料内容整体倒序，反转字符串后得到答案。",
+      "flag_literal_in_material": false
+    },
+    {
+      "id": "double-base64-01",
+      "category": "double_base64",
+      "material": "题干提示：材料经过两层 Base64 编码，由外到内逐层解码。\nUm1sdVlXd2dZVzV6ZDJWeU9pQm1iR0ZuZTNSM01GOXNOSGt6Y2w5aU5qUmZNakF5Tm4wPQ==",
+      "flag": "flag{tw0_l4y3r_b64_2026}",
+      "hint": "先解外层 Base64，再解内层 Base64，得到明文答案。",
+      "flag_literal_in_material": false
+    },
+    {
+      "id": "b64-reversed-01",
+      "category": "base64_then_reversed",
+      "material": "题干提示：先对明文做 Base64 编码，再把整个编码串倒序。材料如下：\n==Qf2IDMy8ldzI3XuNDa09FN2I2enFGbmBiOyV2dz5WYgwWYulmR",
+      "flag": "flag{b64_th3n_r3v_2026}",
+      "hint": "先整体反转字符串，再做 Base64 解码。",
+      "flag_literal_in_material": false
+    },
+    {
+      "id": "js-comment-01",
+      "category": "source_comment",
+      "material": "题目给出一段前端源码 build.js：\n// build.js\nconst API_HOST = \"https://example.invalid\";\n// TODO: remove before release -> flag{js_c0mm3nt_2026}\nfunction boot() { return API_HOST; }\n",
+      "flag": "flag{js_c0mm3nt_2026}",
+      "hint": "答案以注释形式出现在源码中，需要从噪音代码里定位。",
+      "flag_literal_in_material": true
+    },
+    {
+      "id": "xor-01",
+      "category": "xor",
+      "material": "题干提示：明文由可打印 ASCII 组成，使用单字节 XOR 加密，已知明文以 \"flag{\" 开头。\n密文（hex）：\n242e2325393a72301d29713b1d707270743f",
+      "flag": "flag{x0r_k3y_2026}",
+      "hint": "单字节 XOR；由明文前缀 flag{ 可推出 key=0x42，再解密整段密文。",
+      "flag_literal_in_material": false
+    },
+    {
+      "id": "caesar3-01",
+      "category": "caesar",
+      "material": "题干提示：文本经过凯撒位移 +3 变换。\niodj{fdhvdu_vkliwv_eb_wkuhh}",
+      "flag": "flag{caesar_shifts_by_three}",
+      "hint": "题干提示：文本经过凯撒位移 +3 变换。",
+      "flag_literal_in_material": false
+    },
+    {
+      "id": "atbash-01",
+      "category": "atbash",
+      "material": "题干提示：文本经过 Atbash 字母镜像替换（a↔z, b↔y …）。\nuozt{zgyzhs_nriili_gvcg}",
+      "flag": "flag{atbash_mirror_text}",
+      "hint": "题干提示：文本经过 Atbash 字母镜像替换（a↔z, b↔y …）。",
+      "flag_literal_in_material": false
+    },
+    {
+      "id": "dec-ascii-01",
+      "category": "decimal_ascii",
+      "material": "题干提示：材料是一串十进制 ASCII 码，按空格分隔。\n102 108 97 103 123 100 101 99 105 109 97 108 95 98 121 116 101 115 95 50 48 50 54 125",
+      "flag": "flag{decimal_bytes_2026}",
+      "hint": "题干提示：材料是一串十进制 ASCII 码，按空格分隔。",
+      "flag_literal_in_material": false
+    },
+    {
+      "id": "oct-ascii-01",
+      "category": "octal_ascii",
+      "material": "题干提示：材料是一串八进制 ASCII 码，按空格分隔。\n146 154 141 147 173 157 143 164 141 154 137 144 151 147 151 164 163 137 62 60 62 66 175",
+      "flag": "flag{octal_digits_2026}",
+      "hint": "题干提示：材料是一串八进制 ASCII 码，按空格分隔。",
+      "flag_literal_in_material": false
+    },
+    {
+      "id": "bin-ascii-01",
+      "category": "binary_ascii",
+      "material": "题干提示：材料是 8 位二进制字节串，每 8 位一个字符。\n01100110011011000110000101100111011110110110001001101001011011100110000101110010011110010101111101100010011010010111010001110011010111110011001000110000001100100011011001111101",
+      "flag": "flag{binary_bits_2026}",
+      "hint": "题干提示：材料是 8 位二进制字节串，每 8 位一个字符。",
+      "flag_literal_in_material": false
+    },
+    {
+      "id": "base58-01",
+      "category": "base58",
+      "material": "题干提示：材料使用 Bitcoin 字母表的 Base58 编码。\n5ege8Z4nYe8UazbHQyzza7zjjoskGAaK2MsMFWrY",
+      "flag": "flag{base58_bitcoin_alphabet}",
+      "hint": "题干提示：材料使用 Bitcoin 字母表的 Base58 编码。",
+      "flag_literal_in_material": false
+    },
+    {
+      "id": "b64-rot13-01",
+      "category": "base64_then_rot13",
+      "material": "题干提示：先做 Base64 编码，再对整段编码串做 ROT13。\nMzkuM3gvAwEsqTuyoy9lo3DkZ18lZQV2sD==",
+      "flag": "flag{b64_then_rot13_2026}",
+      "hint": "题干提示：先做 Base64 编码，再对整段编码串做 ROT13。",
+      "flag_literal_in_material": false
+    },
+    {
+      "id": "hex-reversed-01",
+      "category": "hex_then_reversed",
+      "material": "题干提示：先转十六进制，再把整段十六进制串倒序保存。\nd763230323f54656372756675627f5e6568647f5875686b77616c666",
+      "flag": "flag{hex_then_reversed_2026}",
+      "hint": "题干提示：先转十六进制，再把整段十六进制串倒序保存。",
+      "flag_literal_in_material": false
+    },
+    {
+      "id": "xor-5a-01",
+      "category": "xor_5a",
+      "material": "题干提示：单字节 XOR，密钥不在材料中；明文为可打印 ASCII 且以 flag{ 开头。\n密文（hex）：\n3c363b3d2122352805313f23056a226f3b05686a686c27",
+      "flag": "flag{xor_key_0x5a_2026}",
+      "hint": "题干提示：单字节 XOR，密钥不在材料中；明文为可打印 ASCII 且以 flag{ 开头。\n密文（hex）：",
+      "flag_literal_in_material": false
+    },
+    {
+      "id": "rot13-hex-01",
+      "category": "rot13_then_hex",
+      "material": "题干提示：先对明文做 ROT13，再转十六进制。\n73796e747b65626731335f677572615f75726b5f323032367d",
+      "flag": "flag{rot13_then_hex_2026}",
+      "hint": "题干提示：先对明文做 ROT13，再转十六进制。",
+      "flag_literal_in_material": false
+    },
+    {
+      "id": "url-full-01",
+      "category": "url_fully_encoded",
+      "material": "题干提示：材料对所有字节做了 URL 百分号编码。\n%66%6C%61%67%7B%66%75%6C%6C%79%5F%65%6E%63%6F%64%65%64%5F%75%72%6C%5F%32%30%32%36%7D",
+      "flag": "flag{fully_encoded_url_2026}",
+      "hint": "题干提示：材料对所有字节做了 URL 百分号编码。",
+      "flag_literal_in_material": false
+    },
+    {
+      "id": "spaced-hex-01",
+      "category": "spaced_hex",
+      "material": "题干提示：材料是十六进制字节串，每个字节之间用一个空格分隔。\n66 6c 61 67 7b 73 70 61 63 65 64 5f 68 65 78 5f 70 61 69 72 73 5f 32 30 32 36 7d",
+      "flag": "flag{spaced_hex_pairs_2026}",
+      "hint": "题干提示：材料是十六进制字节串，每个字节之间用一个空格分隔。",
+      "flag_literal_in_material": false
+    }
+  ]
+}

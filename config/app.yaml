@@ -1,0 +1,55 @@
+app:
+  name: SecOne
+  edition: Local Intelligence Workstation
+  version: 1.0.0-rc1
+  language: zh-CN
+  operator: ""
+
+engine:
+  display_name: SecOne 本地引擎
+  gguf: models/XuanmuSec-v2-Q6_K.gguf
+  runtime: runtime/llama-server.exe
+  host: 127.0.0.1
+  port: 18080
+  context_size: 16384
+  max_tokens: 1536
+  temperature: 0.2
+  gpu_layers: 0
+  threads: 16
+  auto_start: true
+  request_timeout: 300
+  startup_timeout: 120
+  managed: true
+  extra_args: []
+
+analysis:
+  max_files: 500
+  max_file_mb: 64
+  max_total_mb: 256
+  max_text_chars: 60000
+  ai_context_chars: 16000
+  decode_depth: 3
+  max_decode_results: 80
+  archive_depth: 3
+  archive_max_entries: 400
+  archive_max_total_mb: 512
+  binary_string_min: 5
+  ai_enabled: true
+
+ui:
+  theme: dark
+  open_report_folder: false
+
+flags:
+  patterns:
+    - '(?i)\bflag\{[^{}\r\n]{1,200}\}'
+    - '(?i)\bctf\{[^{}\r\n]{1,200}\}'
+    - '(?i)\bsecone\{[^{}\r\n]{1,200}\}'
+    - '(?i)\bflag\([^()\r\n]{1,200}\)'
+  custom_prefixes: []
+
+paths:
+  workspace: workspace
+  output: output
+  data: data
+  logs: logs

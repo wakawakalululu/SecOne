@@ -1,0 +1,11 @@
+{
+  "display_name": "本地推理引擎",
+  "quantization": "Q6_K",
+  "filename": "XuanmuSec-v2-Q6_K.gguf",
+  "expected_size_bytes": 2221614464,
+  "sha256": "bfaf475c740d699adea22bd3ff7cd2832fa6e09b7a1e642a1397e2ef1d458098",
+  "context_default": 8192,
+  "license_note": "当前装载权重为 XuanmuSec-2.6B，分发前请核对 XuanmuSec 的 Apache-2.0 声明与基座模型 LFM1.0 License 的叠加条款，并保留全部版权与许可文本。更换为其它 GGUF 时按该模型自身条款处理。",
+  "source": "https://www.modelscope.cn/models/guaidao2/XuanmuSec-2.6B",
+  "notes": "本文件只描述当前放在 models/ 的权重，不是程序依赖。换模型时把新 GGUF 放入 models/，在设置页选用或改 model.gguf 即可，引擎与业务代码不需要改动。"
+}

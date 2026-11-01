@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "name": "SecOne CTF 准确性小样本 v1",
+  "note": "内部小样本基准，只用于回归模型能否从可解题材料中还原标准答案；样本量仅 6 条，不代表正式准确率，也不构成对模型解题能力的统计结论。",
+  "cases": [
+    {
+      "id": "plaintext-01",
+      "category": "plaintext",
+      "material": "题目备注（泄露的 notes.txt）：\n请提交 flag{pl41n_s1ght_2026} 作为本题答案，其余内容无需处理。",
+      "flag": "flag{pl41n_s1ght_2026}",
+      "hint": "答案以明文出现在材料中。",
+      "flag_literal_in_material": true
+    },
+    {
+      "id": "base64-01",
+      "category": "base64",
+      "material": "题干附带一段 Base64 文本：\nRGVjb2RlZCBhbnN3ZXI6IGZsYWd7YjY0X3Vud3JhcHAzZF8yMDI2fQ==",
+      "flag": "flag{b64_unwrapp3d_2026}",
+      "hint": "材料为 Base64 编码，解码后得到明文答案。",
+      "flag_literal_in_material": false
+    },
+    {
+      "id": "hex-01",
+      "category": "hex",
+      "material": "题干附带十六进制字节串：\n486578206465636f64656420616e737765723a20666c61677b6833785f62797433735f323032367d",
+      "flag": "flag{h3x_byt3s_2026}",
+      "hint": "材料为十六进制编码，转回 ASCII 后得到答案。",
+      "flag_literal_in_material": false
+    },
+    {
+      "id": "rot13-01",
+      "category": "rot13",
+      "material": "题干提示：文本经过 ROT13 变换。\nSvany nafjre: synt{e0g13_fu1sg_2026}",
+      "flag": "flag{r0t13_sh1ft_2026}",
+      "hint": "材料为 ROT13 变换后的文本，旋转 13 位还原。",
+      "flag_literal_in_material": false
+    },
+    {
+      "id": "reversed-01",
+      "category": "reversed",
+      "material": "题干提示：flag 字符串被整体倒序保存，原文如下：\n}6202_d3srever{galf :rewsna laniF",
+      "flag": "flag{revers3d_2026}",
+      "hint": "材料内容整体倒序，反转字符串后得到答案。",
+      "flag_literal_in_material": false
+    },
+    {
+      "id": "xor-01",
+      "category": "xor",
+      "material": "题干提示：明文由可打印 ASCII 组成，使用单字节 XOR 加密，已知明文以 \"flag{\" 开头。\n密文（hex）：\n242e2325393a72301d29713b1d707270743f",
+      "flag": "flag{x0r_k3y_2026}",
+      "hint": "单字节 XOR；由明文前缀 flag{ 可推出 key=0x42，再解密整段密文。",
+      "flag_literal_in_material": false
+    }
+  ]
+}

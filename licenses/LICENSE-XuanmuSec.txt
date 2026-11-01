@@ -1,0 +1,58 @@
+XuanmuSec-2.6B — Model License Notice
+=====================================
+
+License selection (as stated by the model publisher): Apache License, Version 2.0.
+
+The full Apache License 2.0 text is provided in this directory as
+  licenses/Apache-2.0.txt
+
+Copyright and attribution
+-------------------------
+The copyright notice, attribution statement, and any NOTICE file for
+XuanmuSec-2.6B are supplied by the model publisher together with the model
+release. They are not reproduced here because this repository does not
+redistribute the weights and does not hold an authoritative copy of the
+publisher's NOTICE.
+
+Before redistributing the GGUF file, obtain the publisher's NOTICE and
+copyright statement, place it beside this file, and keep both inside the
+model package. Do not remove or alter upstream copyright notices.
+
+Base model
+----------
+XuanmuSec-2.6B is derived from Liquid AI's LFM2 base model. The LFM Open
+License v1.0 applies in addition to the XuanmuSec terms; the verbatim
+upstream text is provided as
+  licenses/LICENSE-LFM1.0.txt
+
+Cumulative effect
+-----------------
+Both licenses apply at the same time. Apache-2.0 grants the permissions for
+the fine-tuned weights; the LFM Open License v1.0 additionally constrains the
+derivative weights inherited from the LFM2 base model (for example its
+redistribution and commercial-use conditions). Where the two differ, the
+stricter term controls, and nothing in Apache-2.0 waives an LFM obligation.
+
+Redistributing the GGUF therefore requires shipping, together and unmodified:
+  licenses/LICENSE-XuanmuSec.txt   (this file)
+  licenses/Apache-2.0.txt
+  licenses/LICENSE-LFM1.0.txt
+
+Trademarks
+----------
+"XuanmuSec", "Liquid AI", and "LFM" are marks of their respective owners. No
+trademark or branding rights are granted by either license.
+
+No warranty
+-----------
+The weights are provided "AS IS", without warranties or conditions of any
+kind, express or implied.
+
+Provenance
+----------
+LFM Open License v1.0 text retrieved 2026-10-31 from
+  https://huggingface.co/LiquidAI/LFM2-2.6B/blob/main/LICENSE
+
+This notice records the declared license selection only. It does not grant
+rights beyond the upstream terms and is not a substitute for the publisher's
+own license and NOTICE files.

@@ -1,0 +1,27 @@
+.python/
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+build/
+dist/
+.nuitka/
+*.egg-info/
+logs/
+data/
+workspace/
+output/
+models/*.gguf
+runtime/llama-server.exe
+runtime/*.dll
+runtime/*.exe
+runtime/backend/
+!models/.gitkeep
+!runtime/.gitkeep
+
+# 生成的验证报告、截图与缓存
+artifacts/
+
+# 本地构建与笔记
+*.log
+安装配置_*.md

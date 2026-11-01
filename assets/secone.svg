@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="shield" x1="0" y1="0" x2="256" y2="256" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#46E8BC"/>
+      <stop offset="0.55" stop-color="#1BAA88"/>
+      <stop offset="1" stop-color="#0B5D4E"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="64" y1="24" x2="196" y2="232" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#A7FFE7"/>
+      <stop offset="1" stop-color="#0A3F35"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="52" fill="#08110F"/>
+  <path d="M128 20 L218 54 L212 158 Q206 204 128 236 Q50 204 44 158 L38 54 Z"
+        fill="url(#shield)" stroke="url(#edge)" stroke-width="4"/>
+  <path d="M128 39 L199 67 L194 153 Q189 191 128 216 Q67 191 62 153 L57 67 Z"
+        fill="none" stroke="#062A23" stroke-width="3" opacity="0.7"/>
+  <path d="M167 92 H111 Q94 92 94 109 Q94 124 110 128 L149 137 Q166 141 166 158 Q166 176 147 176 H88"
+        fill="none" stroke="#06251F" stroke-width="18" stroke-linecap="square" stroke-linejoin="round" opacity="0.9"/>
+  <circle cx="185" cy="185" r="7" fill="#D6FFF3"/>
+</svg>
