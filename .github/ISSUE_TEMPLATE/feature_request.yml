@@ -1,0 +1,34 @@
+name: 功能建议
+description: 提出新功能或改进建议
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        提议前请注意设计红线：SecOne 默认离线、不联网下载、不扫描公网、
+        不执行未知二进制、模型输出不作为可信命令。与此冲突的建议不会被接受，
+        除非能同时说明如何不破坏这些边界。
+  - type: textarea
+    id: problem
+    attributes:
+      label: 要解决的问题
+      description: 描述你遇到的使用场景，而不是直接给方案
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 期望的方案
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 已考虑的替代方案
+  - type: checkboxes
+    id: boundary
+    attributes:
+      label: 边界确认
+      options:
+        - label: 该建议不要求程序联网上传材料或放松离线优先边界
+          required: true

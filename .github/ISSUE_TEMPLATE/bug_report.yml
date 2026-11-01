@@ -1,0 +1,61 @@
+name: 缺陷报告
+description: 报告 SecOne 的功能缺陷
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈。请先确认：
+        - 不在 Issue 列表中重复；
+        - **不要**在报告中附带你无权公开的材料内容或真实 Flag；
+        - 安全问题请走[私密漏洞报告](https://github.com/wakawakalululu/SecOne/security/advisories/new)。
+  - type: dropdown
+    id: area
+    attributes:
+      label: 问题模块
+      options:
+        - 材料接入 / 安全解包
+        - Flag 引擎 / 解码
+        - Crypto / Web / 取证 / 二进制 插件
+        - 本地模型（llama-server / GGUF）
+        - 界面 / 设置
+        - 报告导出 / 任务历史
+        - 打包 / 安装
+        - 其他
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: 发生了什么
+      description: 预期行为 vs 实际行为
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: 复现步骤
+      placeholder: |
+        1. 拖入 …
+        2. 选择 …
+        3. 出现 …
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: 版本与来源
+      description: 源码运行 / 便携包 / 安装包，以及版本号
+      placeholder: v1.0.0-rc1（源码运行）
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: 日志摘录
+      description: 请粘贴 logs/secone.log 相关片段，注意先移除敏感材料信息
+  - type: textarea
+    id: model-info
+    attributes:
+      label: 模型环境（如涉及 AI 功能）
+      description: GGUF 文件名、llama.cpp 版本（bxxxx）、是否启动成功

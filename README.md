@@ -58,7 +58,7 @@ Flag 候选与证据：每个候选保留来源文件、偏移、提取方法与
 
 ![任务历史](docs/screenshots/history.png)
 
-更多说明见本仓库 [Wiki](https://github.com/wakawakalululu/SecOne/wiki)。
+更多说明见[文档中心](docs/wiki/Home.md)（安装部署、使用指南、架构、Flag 引擎、基准评估、打包分发、测试验证、FAQ 共 9 篇，亦可在仓库 Wiki 页签阅读）。
 
 ## 快速开始（开发模式）
 
