@@ -232,6 +232,7 @@ tests/                pytest 测试
 
 发布材料：
 
+- [GitHub Release（v1.0.0-rc1）](https://github.com/wakawakalululu/SecOne/releases/tag/v1.0.0-rc1)：三平台便携包（Windows/Linux/macOS）与 `SHA256SUMS.txt`，由 Actions 流水线自动构建并附加
 - [发布说明](docs/RELEASE_NOTES.md)
 - [测试报告](docs/TEST_REPORT.md)
 - [离线安装与部署](docs/OFFLINE_INSTALL.md)
