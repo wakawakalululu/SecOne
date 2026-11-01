@@ -6,6 +6,7 @@ from pathlib import Path
 from PySide6.QtCore import Qt, QUrl, Signal
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import (
+    QApplication,
     QCheckBox,
     QComboBox,
     QFileDialog,
@@ -23,6 +24,7 @@ from PySide6.QtWidgets import (
 )
 
 from ...core.fileio import format_size
+from ...llm.candidates import ModelCandidate, load_candidates
 from ..context import AppContext
 from ..widgets import StatusChip
 from ..worker import ModelWorker
@@ -202,6 +204,29 @@ class SettingsPage(QWidget):
         self.discover_row.addWidget(self.discover_btn)
         self.discover_row.addStretch(1)
         form.addRow("可用模型", self._wrap_row(self.discover_row))
+
+        self._candidates: list[ModelCandidate] = []
+        self.candidate_row = QHBoxLayout()
+        self.candidate_combo = QComboBox()
+        self.candidate_combo.setObjectName("Mono")
+        self.candidate_combo.setSizeAdjustPolicy(QComboBox.AdjustToContents)
+        self.candidate_open_btn = QPushButton("打开下载页")
+        self.candidate_open_btn.setObjectName("GhostButton")
+        self.candidate_open_btn.clicked.connect(self._open_candidate_source)
+        self.candidate_copy_btn = QPushButton("复制链接")
+        self.candidate_copy_btn.setObjectName("GhostButton")
+        self.candidate_copy_btn.clicked.connect(self._copy_candidate_source)
+        self.candidate_row.addWidget(self.candidate_combo, 1)
+        self.candidate_row.addWidget(self.candidate_open_btn)
+        self.candidate_row.addWidget(self.candidate_copy_btn)
+        self.candidate_row.addStretch(1)
+        form.addRow("候选模型", self._wrap_row(self.candidate_row))
+        self.candidate_detail = QLabel("")
+        self.candidate_detail.setObjectName("Dim")
+        self.candidate_detail.setWordWrap(True)
+        self.candidate_detail.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        form.addRow(self.candidate_detail)
+        self.candidate_combo.currentIndexChanged.connect(self._on_candidate_selected)
 
         spin_row = QHBoxLayout()
         self.port_spin = QSpinBox()
@@ -395,6 +420,77 @@ class SettingsPage(QWidget):
         self.decode_depth_spin.setValue(int(config.get("analysis.decode_depth", 3)))
         prefixes = config.get("flags.custom_prefixes", []) or []
         self.prefix_edit.setText(",".join(str(item) for item in prefixes))
+        self._load_candidates()
+
+    def _load_candidates(self) -> None:
+        """Populate the candidate-model picker from models/candidates.json."""
+        candidates = load_candidates(self.context.paths.models / "candidates.json")
+        self._candidates = candidates
+        self.candidate_combo.blockSignals(True)
+        self.candidate_combo.clear()
+        if not candidates:
+            self.candidate_combo.setVisible(False)
+            self.candidate_open_btn.setVisible(False)
+            self.candidate_copy_btn.setVisible(False)
+            self.candidate_detail.setText(
+                "未找到候选模型清单（models/candidates.json），可手动填写 GGUF 路径。"
+            )
+        else:
+            for item in candidates:
+                parts = [item.name]
+                if item.quantization:
+                    parts.append(item.quantization)
+                if item.size_label:
+                    parts.append(item.size_label)
+                self.candidate_combo.addItem(" · ".join(parts), item)
+        self.candidate_combo.blockSignals(False)
+        if candidates:
+            self._on_candidate_selected(self.candidate_combo.currentIndex())
+
+    def _selected_candidate(self) -> ModelCandidate | None:
+        index = self.candidate_combo.currentIndex()
+        if 0 <= index < len(self._candidates):
+            return self._candidates[index]
+        return None
+
+    def _on_candidate_selected(self, index: int) -> None:
+        item = self._selected_candidate() if index >= 0 else None
+        if item is None:
+            self.candidate_detail.setText("")
+            return
+        lines: list[str] = []
+        meta = []
+        if item.architecture:
+            meta.append(f"架构 {item.architecture}")
+        if item.context_default:
+            meta.append(f"建议上下文 {item.context_default}")
+        if meta:
+            lines.append(" · ".join(meta))
+        if item.note:
+            lines.append(item.note)
+        lines.append(
+            "获取渠道：" + "；".join(f"{s.label} {s.url}" for s in item.sources)
+        )
+        lines.append(
+            "程序不内置下载：在浏览器打开发布页获取 GGUF 放入 models/，"
+            "再点“扫描 models/ 中的 GGUF”选用。"
+        )
+        self.candidate_detail.setText("\n".join(lines))
+
+    def _open_candidate_source(self) -> None:
+        item = self._selected_candidate()
+        if item is None:
+            return
+        QDesktopServices.openUrl(QUrl(item.sources[0].url))
+
+    def _copy_candidate_source(self) -> None:
+        item = self._selected_candidate()
+        if item is None:
+            return
+        QApplication.clipboard().setText(
+            "\n".join(f"{s.label}: {s.url}" for s in item.sources)
+        )
+        self.notify.emit("已复制候选模型下载链接。", "success")
 
     def save_settings(self) -> None:
         if self._busy:

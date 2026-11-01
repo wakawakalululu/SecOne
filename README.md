@@ -92,6 +92,22 @@ SecOne 不附带模型权重，也不附带 llama.cpp 二进制（二者均在 `
    - 点击“启动本地引擎”，健康检查通过后，一键分析会自动调用模型。
 4. 如果只做静态分析，可以不安装模型；流水线会跳过 AI 阶段并在结果中注明原因。
 
+### 候选模型与下载选项
+
+设置页“模型资源”区提供**候选模型**下拉框，数据来自 `models/candidates.json`（可自行增删条目）。选中条目会显示架构、建议上下文、说明与获取渠道，并支持“打开下载页”（系统浏览器）与“复制链接”。程序自身不联网下载，保持离线优先：从发布页获取 GGUF 放入 `models/`，再点“扫描 models/ 中的 GGUF”选用即可。
+
+内置候选（截至 v1.0.0-rc1）：
+
+| 模型 | 规模 | 说明 |
+| --- | --- | --- |
+| XuanmuSec-2.6B `Q6_K` | 约 2.07 GiB | 默认模型，安全领域微调，已完成 RC1 实机链路验证 |
+| Qwen2.5-0.5B-Instruct `q4_k_m` | 约 469 MB | 超轻量，低配机器可跑，RC1 验证同款 |
+| Qwen3-0.6B | 约 0.5–0.8 GB | Qwen3 系列最小稠密模型，超轻量候选 |
+| Qwen3.6-35B-A3B | 35B MoE（激活约 3B） | 2026-04 发布，Apache 2.0，稀疏 MoE 适合家用显卡；需 llama.cpp b8809+ |
+| Qwen3.8-27B | 27B 稠密 | 2026-08 开源的原生多模态稠密模型，Apache 2.0 |
+
+Qwen3.6 / Qwen3.8 的 GGUF 量化版可从 ModelScope（如 [unsloth/Qwen3.6-35B-A3B-GGUF](https://www.modelscope.cn/models/unsloth/Qwen3.6-35B-A3B-GGUF)）或 Hugging Face（如 [Qwen/Qwen3.8-27B](https://huggingface.co/Qwen/Qwen3.8-27B)、[lmstudio-community/Qwen3.8-27B-GGUF](https://huggingface.co/lmstudio-community/Qwen3.8-27B-GGUF)）获取。更换任何模型都不需要改动业务代码：新架构以 GGUF 元数据动态识别，不同 llama.cpp 版本的参数差异请以实机验证为准。
+
 模型服务只监听 `127.0.0.1`，使用 OpenAI 兼容接口：
 
 ```text

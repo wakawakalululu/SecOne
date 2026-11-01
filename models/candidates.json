@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "note": "候选模型推荐清单：设置页『候选模型』下拉框的数据来源。本文件只提供名称、规模与获取渠道，程序不做任何联网下载；请自行从发布页获取 GGUF 放入 models/ 后点『扫描 models/ 中的 GGUF』。可按需增删条目。",
+  "candidates": [
+    {
+      "name": "XuanmuSec-2.6B",
+      "quantization": "Q6_K",
+      "size_label": "约 2.07 GiB（Q6_K）",
+      "architecture": "lfm2",
+      "context_default": 8192,
+      "note": "SecOne 默认模型，安全领域微调。已随 RC1 完成引擎、全流水线与界面链路实机验证（14/14、15/15、9/9）。",
+      "sources": [
+        {
+          "label": "ModelScope 发布页",
+          "url": "https://www.modelscope.cn/models/guaidao2/XuanmuSec-2.6B"
+        }
+      ]
+    },
+    {
+      "name": "Qwen2.5-0.5B-Instruct",
+      "quantization": "q4_k_m",
+      "size_label": "约 469 MB（q4_k_m）",
+      "architecture": "qwen2",
+      "context_default": 32768,
+      "note": "超轻量验证模型，RC1 链路验证同款（14/14、15/15、9/9），低配机器也可运行。",
+      "sources": [
+        {
+          "label": "ModelScope GGUF",
+          "url": "https://www.modelscope.cn/models/Qwen/Qwen2.5-0.5B-Instruct-GGUF"
+        },
+        {
+          "label": "Hugging Face GGUF",
+          "url": "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF"
+        }
+      ]
+    },
+    {
+      "name": "Qwen3-0.6B",
+      "quantization": "q4_K_M 及以上",
+      "size_label": "约 0.5–0.8 GB（视量化档位）",
+      "architecture": "qwen3",
+      "context_default": 32768,
+      "note": "Qwen3 系列最小的稠密模型，作为 SecOne 的超轻量候选；上下文默认建议 32768 以内，按显存/内存调整。",
+      "sources": [
+        {
+          "label": "ModelScope GGUF",
+          "url": "https://www.modelscope.cn/models/Qwen/Qwen3-0.6B-GGUF"
+        },
+        {
+          "label": "Hugging Face GGUF",
+          "url": "https://huggingface.co/Qwen/Qwen3-0.6B-GGUF"
+        }
+      ]
+    },
+    {
+      "name": "Qwen3.6-35B-A3B",
+      "quantization": "UD-Q2_K_XL 至 Q5_K_M",
+      "size_label": "35B MoE（每 token 激活约 3B），GGUF 约 13–25 GB 视量化档位",
+      "architecture": "qwen3moe（以 GGUF 元数据为准）",
+      "context_default": 32768,
+      "note": "2026-04 发布的稀疏 MoE 模型，Apache 2.0。激活参数小、可在家用显卡运行；需要 llama.cpp b8809+，放入 runtime/ 后在设置页确认引擎版本。多模态感知，上下文按模型卡调整。",
+      "sources": [
+        {
+          "label": "ModelScope GGUF（unsloth 动态量化）",
+          "url": "https://www.modelscope.cn/models/unsloth/Qwen3.6-35B-A3B-GGUF"
+        }
+      ]
+    },
+    {
+      "name": "Qwen3.8-27B",
+      "quantization": "q4_K_M 及以上",
+      "size_label": "27B 稠密，GGUF 约 16 GB（q4_K_M）",
+      "architecture": "qwen3（以 GGUF 元数据为准）",
+      "context_default": 32768,
+      "note": "2026-08 开源的原生多模态稠密模型，Apache 2.0，长上下文；官方称家用显卡可跑。稠密 27B 对显存要求高于 Qwen3.6-35B-A3B，按硬件选择。",
+      "sources": [
+        {
+          "label": "Hugging Face 官方权重",
+          "url": "https://huggingface.co/Qwen/Qwen3.8-27B"
+        },
+        {
+          "label": "ModelScope 官方组织",
+          "url": "https://www.modelscope.cn/organization/Qwen"
+        },
+        {
+          "label": "Hugging Face GGUF（社区）",
+          "url": "https://huggingface.co/lmstudio-community/Qwen3.8-27B-GGUF"
+        }
+      ]
+    }
+  ]
+}
